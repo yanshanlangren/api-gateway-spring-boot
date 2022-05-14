@@ -2,16 +2,16 @@ package elvis.controller;
 
 import elvis.bo.Domain;
 import elvis.service.DomainService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
+@Slf4j
 @RequestMapping("/domain")
 public class DomainController {
-
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DomainController.class);
 
     private final DomainService domainService;
 
@@ -21,13 +21,9 @@ public class DomainController {
 
     @GetMapping("/query/{domain_id}")
     public ResponseEntity get(@PathVariable String domain_id) {
-//        Optional<Domain> domain = domainService.query(domain_id);
         Optional<Domain> domain = domainService.query(domain_id);
         log.info(domain.toString());
-//        return ResponseEntity.ok(domain);
-        return domain.isPresent()
-                ? ResponseEntity.ok(domain.get())
-                : ResponseEntity.notFound().build();
+        return domain.isPresent() ? ResponseEntity.ok(domain.get()) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/register")
