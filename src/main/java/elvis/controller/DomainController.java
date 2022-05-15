@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -26,10 +27,17 @@ public class DomainController {
         return domain.isPresent() ? ResponseEntity.ok(domain.get()) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/list")
+    public ResponseEntity list(){
+        List<Domain> list = domainService.list();
+        log.info(list.toString());
+        return ResponseEntity.ok(list);
+    }
+
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody Domain domain) {
-        domainService.store(domain);
         log.info(domain.toString());
+        domainService.store(domain);
         return ResponseEntity.ok(domain);
     }
 }
