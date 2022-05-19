@@ -3,7 +3,6 @@ package elvis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import elvis.bo.Domain;
-import elvis.builder.DomainBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,11 +21,7 @@ public class EndpointTest {
 
     @Test
     public void shouldStoreDomain() throws JsonProcessingException {
-        Domain domain =new DomainBuilder()
-                .setDomain_id("ad-001")
-                .setDomain_name("domain name")
-                .setDescription("description of ad-001")
-                .build();
+        Domain domain = new Domain();
         HttpEntity<String> entity = getStringHttpEntity(domain);
         ResponseEntity<String> response = restTemplate.postForEntity("/domain/register", entity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

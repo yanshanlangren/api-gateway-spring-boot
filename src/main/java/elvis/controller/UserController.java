@@ -17,15 +17,15 @@ public class UserController {
     private UserMapper userMapper;
 
     @GetMapping("/list")
-    public ResponseEntity list() {
+    public ResponseEntity<List<User>> list() {
         List<User> list = userMapper.selectList(null);
         log.info(list.toString());
-        return list.size() > 0 ? ResponseEntity.ok(list) : ResponseEntity.ok(ResponseEntity.EMPTY);
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/create")
     public ResponseEntity create(@RequestBody User user) {
         log.info("input User:" + user);
-        return userMapper.insert(user) > 0 ? ResponseEntity.ok().build() : ResponseEntity.status(500).build();
+        return userMapper.insert(user) > 0 ? ResponseEntity.ok().build() : ResponseEntity.internalServerError().build();
     }
 }

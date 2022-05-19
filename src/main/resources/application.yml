@@ -35,3 +35,19 @@ spring:
 #      connection-timeout: 60000
 #      connection-test-query: SELECT 1
 #      pool-name: elvis-pool
+
+  redis:
+    #Redis服务器IP地址
+    host: 192.168.0.6
+    #Redis服务器端口号
+    port: 6379
+    jedis:
+      pool:
+        #Redis服务器最大活跃数
+        max-active: 20
+        #Redis服务器最大空闲数
+        max-idle: 8
+        #Redis服务器最小空闲数
+        min-idle: 0
+        #Redis服务器链接最大超时20000
+        max-wait: 20000

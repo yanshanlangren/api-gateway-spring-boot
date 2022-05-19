@@ -1,4 +1,4 @@
-package elvis;
+package elvis.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,9 +16,7 @@ public class SeedingApplicationDataConfiguration {
 
     @Bean
     public Map<String, Domain> perDomain(){
-        final Map<String, Domain> domainMap = new HashMap<>();
-        domainMap.put("ad-001", new Domain("ad-001", "test-name", "description"));
-        return domainMap;
+        return new HashMap<>();
     }
 
     @Bean

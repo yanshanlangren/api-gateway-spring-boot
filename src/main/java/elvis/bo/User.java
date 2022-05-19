@@ -1,12 +1,10 @@
 package elvis.bo;
 
-import lombok.Getter;
+import lombok.Data;
 
+@Data
 public class User {
-    @Getter
     Long id;
-    @Getter
     private String name;
-    @Getter
     int age;
 }
