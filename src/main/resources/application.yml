@@ -10,31 +10,31 @@ spring:
     username: elvis
     password: '!Q@W3e4r'
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    druid:
-#      initialSize: 5
-#      minIdle: 5
-#      maxActive: 20
-#      maxWait: 2000
-#      validationQuery: select 1
-#      testOnBorrow: false
-#      testOnReturn: false
-#      testWhileIdle: true
-#      filters: stat, wall
-#      stat-view-servlet:
-#        enabled: true
-#        url-pattern: /druid/*
-#        reset-enable: true
-#        login-username: admin
-#        login-password: 123
+  #    druid:
+  #      initialSize: 5
+  #      minIdle: 5
+  #      maxActive: 20
+  #      maxWait: 2000
+  #      validationQuery: select 1
+  #      testOnBorrow: false
+  #      testOnReturn: false
+  #      testWhileIdle: true
+  #      filters: stat, wall
+  #      stat-view-servlet:
+  #        enabled: true
+  #        url-pattern: /druid/*
+  #        reset-enable: true
+  #        login-username: admin
+  #        login-password: 123
 
-#    hikari:
-#      minimum-idle: 10
-#      maximum-pool-size: 20
-#      idle-timeout: 500000
-#      max-lifetime: 540000
-#      connection-timeout: 60000
-#      connection-test-query: SELECT 1
-#      pool-name: elvis-pool
+  #    hikari:
+  #      minimum-idle: 10
+  #      maximum-pool-size: 20
+  #      idle-timeout: 500000
+  #      max-lifetime: 540000
+  #      connection-timeout: 60000
+  #      connection-test-query: SELECT 1
+  #      pool-name: elvis-pool
 
   redis:
     #Redis服务器IP地址
@@ -51,3 +51,26 @@ spring:
         min-idle: 0
         #Redis服务器链接最大超时20000
         max-wait: 20000
+  kafka:
+    bootstrap-servers: i-oeruks5g:9092
+    producer:
+      retries: 0 # 重试次数
+      acks: 1 # 应答级别:多少个分区副本备份完成时向生产者发送ack确认(可选0、1、all/-1)
+      batch-size: 16384 # 批量大小
+      buffer-memory: 33554432 # 生产端缓冲区大小
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #      value-serializer: com.itheima.demo.config.MySerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer: # consumer消费者
+      group-id: javagroup # 默认的消费组ID
+      enable-auto-commit: true # 是否自动提交offset
+      auto-commit-interval: 100  # 提交offset延时(接收到消息后多久提交offset)
+
+      # earliest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，从头开始消费
+      # latest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据
+      # none:topic各分区都存在已提交的offset时，从offset后开始消费；只要有一个分区不存在已提交的offset，则抛出异常
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #      value-deserializer: com.itheima.demo.config.MyDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
