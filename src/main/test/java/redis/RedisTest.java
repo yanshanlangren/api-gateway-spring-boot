@@ -3,13 +3,15 @@ package redis;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.io.Closeable;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(classes = elvis.App.class)
@@ -27,6 +29,16 @@ public class RedisTest {
         //获取所有的key
         Set<String> keys = redisTemplate.keys("*");
         System.out.println(keys);
+    }
+
+    @Test
+    void createMap() {
+        HashMap<String, Object> map = new HashMap<>();
+        for (int i = 0; i < 1000; i++) {
+            map.put("hello-" + i, UUID.randomUUID().toString());
+        }
+        redisTemplate.opsForHash().putAll("hmtest", map);
+
     }
 
     @Test
@@ -56,14 +68,56 @@ public class RedisTest {
 
     @Test
     void testScan() {
+        long t0 = System.currentTimeMillis();
         ScanOptions options = ScanOptions.scanOptions().match("hello*").count(1000).build();
-        Cursor<String> cursor = (Cursor<String>) redisTemplate.executeWithStickyConnection(
-                redisConnection -> new ConvertingCursor<>(redisConnection.scan(options),
-                        redisTemplate.getKeySerializer()::deserialize));
+        Cursor<String> cursor = (Cursor<String>) redisTemplate.executeWithStickyConnection(redisConnection -> new ConvertingCursor<>(redisConnection.scan(options), redisTemplate.getKeySerializer()::deserialize));
 
+        Set<String> res = new HashSet<>();
         cursor.forEachRemaining(key -> {
-            System.out.println(LocalDateTime.now() + ": " + key);
-            redisTemplate.delete(key);
+            res.add(key);
         });
+        long t1 = System.currentTimeMillis();
+        System.out.println("查询用时: " + (t1 - t0) + "ms");
     }
+
+    @Test
+    void testKeys() {
+        long t0 = System.currentTimeMillis();
+        Set<String> res = redisTemplate.keys("hello*");
+//        res.forEach(key -> {
+//            System.out.println(LocalDateTime.now() + ": " + key);
+//        });
+        long t1 = System.currentTimeMillis();
+        System.out.println("查询用时: " + (t1 - t0) + "ms");
+    }
+
+    @Test
+    void testHMScan() {
+        ScanOptions options = ScanOptions.scanOptions().count(100).match("*").build();
+        long t0 = System.currentTimeMillis();
+        Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan("hmtest", options);
+        while (cursor.hasNext()) {
+            Map.Entry<Object, Object> entry = cursor.next();
+            System.out.println("key:[" + entry.getKey() + "], value:[" + entry.getValue() + "]");
+        }
+        long t1 = System.currentTimeMillis();
+        System.out.println("查询用时: " + (t1 - t0) + "ms");
+
+//        RedisSerializer<String> redisSerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
+//        Cursor<Map.Entry<Object, Object>> cursor1 =
+//                 redisTemplate
+//                        .executeWithStickyConnection(new RedisCallback<Closeable>() {
+//                            @Override
+//                            public Closeable doInRedis(RedisConnection connection) throws DataAccessException {
+////                                Closeable c = new ConvertingCursor<>(connection.scan(options), redisSerializer::deserialize);
+//                                Closeable c = new ConvertingCursor<>(connection.hScan(redisSerializer.serialize("hmtest"), options), redisSerializer::deserialize);
+//                                return c;
+//                            }
+//                        });
+//
+//        cursor1.forEachRemaining(System.out::println);
+//        long t2 = System.currentTimeMillis();
+//        System.out.println("查询用时: " + (t2 - t1) + "ms");
+    }
+
 }
