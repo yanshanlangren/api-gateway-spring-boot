@@ -23,12 +23,17 @@ public class StockServiceTest {
     }
 
     @Test
-    public void testDaiyImportByPageNumber() {
+    public void testDailyImportByPageNumber() {
         stockService.scrapyDailyStockInfoByPageNumber(231, 300);
     }
 
     @Test
-    public void testDaiyImport() {
+    public void testDailyImport() {
         stockService.scrapyDailyStockInfo();
+    }
+
+    @Test
+    public void testGetStock() {
+        stockService.getDayInfoByStock(0, "002756");
     }
 }

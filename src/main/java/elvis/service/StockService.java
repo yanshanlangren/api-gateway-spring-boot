@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import elvis.bo.Stock;
 import elvis.common.utils.HTTPUtils;
 import elvis.common.utils.PageUtils;
+import elvis.common.utils.StringUtils;
 import elvis.controller.vo.req.StockQuery;
 import elvis.dao.mapper.StockMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class StockService {
 
     /**
      * 按页面查询个股信息
+     *
      * @param start
      * @param end
      * @return
@@ -43,7 +45,10 @@ public class StockService {
             list.addAll(respList);
         }
         Date now = new Date();
-        list.forEach(x -> x.setCreateTime(now));
+        list.forEach(x -> {
+            x.setCreateTime(now);
+            x.setDataTime(now);
+        });
         long t0 = System.currentTimeMillis();
         stockMapper.insertBatchSomeColumn(list);
         log.info("插入" + size + "条数据总用时" + (System.currentTimeMillis() - t0) + "ms");
@@ -53,8 +58,15 @@ public class StockService {
     /**
      * 查询个股详细
      */
-    public void getDayInfoByStock(){
-
+    public void getDayInfoByStock(Integer stockType, String stockCode) {
+        String secId = String.format("%d.%s", stockType, stockCode);
+        String url = "http://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f17&fields2=f51,f52,f53,f54,f55,f56,f57,f58&ut=fa5fd1943c7b386f172d6893dbfba10b&ndays=1&iscr=0&secid=" + secId + "&cb=jQuery112405680347133483739_1655639429810&_=1655639429839";
+        String resp = HTTPUtils.getPage(url, "GET");
+        String jsonInput = StringUtils.reveal(resp);
+        System.out.println(resp);
+        JSONObject root = JSONObject.parseObject(jsonInput);
+        JSONObject data = (JSONObject) root.get("data");
+        JSONArray klines = data.getJSONArray("klines");
     }
 
     public int scrapyDailyStockInfo() {
@@ -81,11 +93,12 @@ public class StockService {
 
     public List<Stock> getStockData(String input) {
         List<Stock> list = new ArrayList<>();
-        String[] inputArr = input.split("\\(");
-        Date dataTime = new Date(Long.parseLong(inputArr[0].split("_")[1]));
-        String jsonInput = inputArr[1].substring(0, inputArr[1].length() - 1);
-        //清除无效的 "-"数据
-        jsonInput = jsonInput.replace("\"-\"", "0");
+//        String[] inputArr = input.split("\\(");
+//        Date dataTime = new Date(Long.parseLong(inputArr[0].split("_")[1]));
+//        String jsonInput = inputArr[1].substring(0, inputArr[1].length() - 1);
+//        //清除无效的 "-"数据
+//        jsonInput = jsonInput.replace("\"-\"", "0");
+        String jsonInput = StringUtils.reveal(input);
         JSONObject root = (JSONObject) JSONObject.parse(jsonInput);
         JSONObject data = (JSONObject) root.get("data");
         if (data == null) {
@@ -94,12 +107,11 @@ public class StockService {
         JSONArray dataArr = (JSONArray) data.get("diff");
         for (Object jsonObject : dataArr) {
             Stock s = JSONObject.toJavaObject((JSON) jsonObject, Stock.class);
-            s.setDataTime(dataTime);
+//            s.setDataTime(dataTime);
             list.add(s);
         }
         return list;
     }
-
 
 
     public Page<Stock> listPage(StockQuery query) {
