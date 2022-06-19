@@ -1,4 +1,4 @@
-package elvis.config;
+package elvis.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package elvis.config;
+package elvis.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

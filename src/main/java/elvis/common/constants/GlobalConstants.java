@@ -1,4 +1,4 @@
-package elvis.constants;
+package elvis.common.constants;
 
 public class GlobalConstants {
     public static final String EAST_MONEY_URL = "";
