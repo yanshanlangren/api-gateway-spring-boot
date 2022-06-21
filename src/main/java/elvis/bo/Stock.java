@@ -51,9 +51,6 @@ public class Stock {
     @JSONField(name = "f13")
     private Integer stockType;// 股票类型
 
-    @JSONField(name = "f14")
-    private String name;// 股票名称
-
     @JSONField(name = "f15")
     private Double todayHigh;// 最高
 

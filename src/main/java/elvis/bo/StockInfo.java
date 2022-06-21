@@ -18,4 +18,10 @@ public class StockInfo {
     private String name;
 
     private Date createTime;
+
+    private Integer stockType;
+
+    private Integer histSaved;
+
+    private Date updateDate;
 }

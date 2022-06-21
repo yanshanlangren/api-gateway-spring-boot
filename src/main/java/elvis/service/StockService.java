@@ -6,18 +6,24 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import elvis.bo.Stock;
+import elvis.bo.StockInfo;
+import elvis.common.constants.GlobalConstants;
+import elvis.common.utils.DateUtils;
 import elvis.common.utils.HTTPUtils;
 import elvis.common.utils.PageUtils;
 import elvis.common.utils.StringUtils;
 import elvis.controller.vo.req.StockQuery;
+import elvis.dao.mapper.StockInfoMapper;
 import elvis.dao.mapper.StockMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
@@ -25,6 +31,9 @@ public class StockService {
 
     @Autowired
     StockMapper stockMapper;
+
+    @Autowired
+    StockInfoMapper stockInfoMapper;
 
     /**
      * 按页面查询个股信息
@@ -56,17 +65,77 @@ public class StockService {
     }
 
     /**
-     * 查询个股详细
+     * 查询个股历史信息
      */
-    public void getDayInfoByStock(Integer stockType, String stockCode) {
+    public int getStockHist(Integer stockType, String stockCode) {
         String secId = String.format("%d.%s", stockType, stockCode);
-        String url = "http://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f17&fields2=f51,f52,f53,f54,f55,f56,f57,f58&ut=fa5fd1943c7b386f172d6893dbfba10b&ndays=1&iscr=0&secid=" + secId + "&cb=jQuery112405680347133483739_1655639429810&_=1655639429839";
+//        String url = "http://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f17&fields2=f51,f52,f53,f54,f55,f56,f57,f58&ut=fa5fd1943c7b386f172d6893dbfba10b&ndays=1&iscr=0&secid=" + secId + "&cb=jQuery112405680347133483739_1655639429810&_=1655639429839";
+        String url = "http://95.push2his.eastmoney.com/api/qt/stock/kline/get?cb=jQuery112402830692121857523_1655650752965&secid=" + secId + "&ut=fa5fd1943c7b386f172d6893dbfba10b&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=101&fqt=0&end=20500101&_=1655650753106&lmt=9600";
+        long t0 = System.currentTimeMillis();
         String resp = HTTPUtils.getPage(url, "GET");
+        long t1 = System.currentTimeMillis();
+        log.info("网络请求时长:{}ms", (t1 - t0));
         String jsonInput = StringUtils.reveal(resp);
-        System.out.println(resp);
+//        System.out.println(resp);
         JSONObject root = JSONObject.parseObject(jsonInput);
         JSONObject data = (JSONObject) root.get("data");
         JSONArray klines = data.getJSONArray("klines");
+        List<Stock> list = new ArrayList<>();
+        for (Object obj : klines) {
+            String[] lineArr = ((String) obj).split(",");
+            Stock s = new Stock();
+            try {
+                s.setDataTime(DateUtils.parseDateString(lineArr[0]));
+            } catch (ParseException e) {
+                log.error("failed to parse date format[" + lineArr[0] + "]");
+                e.printStackTrace();
+            }
+            s.setStockType(stockType);
+            s.setCode(stockCode);
+
+            s.setTodayStart(Double.parseDouble(lineArr[1]));
+            s.setYesterdayEnd(Double.parseDouble(lineArr[2]));
+            s.setTodayHigh(Double.parseDouble(lineArr[3]));
+            s.setTodayLow(Double.parseDouble(lineArr[4]));
+            s.setTradeAmount(Long.parseLong(lineArr[5]));
+            s.setTradeVolume(Double.parseDouble(lineArr[6]));
+            s.setAmplitude(Double.parseDouble(lineArr[7]));
+            s.setFluctuation(Double.parseDouble(lineArr[8]));
+            s.setChangeAmount(Double.parseDouble(lineArr[9]));
+            list.add(s);
+        }
+        long t2 = System.currentTimeMillis();
+//        log.info("数据处理时长:{}ms", (t2 - t1));
+        if (list.size() > 0) {
+            stockMapper.insertBatchSomeColumn(list);
+        }
+        long t3 = System.currentTimeMillis();
+        log.info("存储股票[{}],代码[{}]的[{}]条历史数据, 用时{}ms", data.getString("name"), stockCode, list.size(), (t3 - t2));
+        return list.size();
+    }
+
+    public void getAllHist(int limit, int pageOffset) {
+        Date today = new Date();
+        Page<StockInfo> page = new Page<>((long) pageOffset * limit, limit);
+        LambdaQueryWrapper<StockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StockInfo::getHistSaved, GlobalConstants.STOCK_HIST_NOT_SAVED);
+        long t0 = System.currentTimeMillis();
+        stockInfoMapper.selectPage(page, wrapper);
+        long t1 = System.currentTimeMillis();
+        log.info("查询第{}页, {}条数据用时{}ms", pageOffset, page.getSize(), (t1 - t0));
+        AtomicInteger total = new AtomicInteger();
+        page.getRecords().forEach(x -> {
+            total.addAndGet(getStockHist(x.getStockType(), x.getCode()));
+            x.setUpdateDate(today);
+            x.setHistSaved(GlobalConstants.STOCK_HIST_SAVED);
+            stockInfoMapper.updateById(x);
+        });
+        long t2 = System.currentTimeMillis();
+        log.info("处理所有股票历史数据用时{}ms", (t2 - t1));
+
+//        stockMapper.insertBatchSomeColumn(stocks);
+//        long t3 = System.currentTimeMillis();
+//        log.info("存储{}条股票信息数据用时{}ms", total, (t3 - t2));
     }
 
     public int scrapyDailyStockInfo() {
@@ -90,6 +159,7 @@ public class StockService {
         log.info("插入" + size + "条数据总用时" + (System.currentTimeMillis() - t0) + "ms");
         return size;
     }
+
 
     public List<Stock> getStockData(String input) {
         List<Stock> list = new ArrayList<>();
