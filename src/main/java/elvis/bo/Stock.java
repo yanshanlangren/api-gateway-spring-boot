@@ -65,4 +65,6 @@ public class Stock {
 
     @JSONField(name = "f23")
     private Double pbr;// 市净率
+
+    private Double todayEnd; //收盘
 }

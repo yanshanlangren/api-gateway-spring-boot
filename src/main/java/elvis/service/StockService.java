@@ -94,7 +94,7 @@ public class StockService {
             s.setCode(stockCode);
 
             s.setTodayStart(Double.parseDouble(lineArr[1]));
-            s.setYesterdayEnd(Double.parseDouble(lineArr[2]));
+            s.setTodayEnd(Double.parseDouble(lineArr[2]));
             s.setTodayHigh(Double.parseDouble(lineArr[3]));
             s.setTodayLow(Double.parseDouble(lineArr[4]));
             s.setTradeAmount(Long.parseLong(lineArr[5]));

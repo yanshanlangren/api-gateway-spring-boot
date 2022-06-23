@@ -21,6 +21,9 @@ create table dev.stock
     pbr            numeric(10, 4) default 0 comment '市净率',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8;
+create index idx_stock_code on stock (code);
+create index idx_stock_stock_type on stock (stock_type);
+create index idx_stock_data_time on stock (data_time);
 
 create table dev.stock_info
 (
@@ -32,3 +35,5 @@ create table dev.stock_info
     hist_saved  TINYINT UNSIGNED DEFAULT 0 NULL COMMENT '历史数据是否保存',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8;
+create index idx_stock_code on stock (code);
+create index idx_stock_stock_type on stock (stock_type);

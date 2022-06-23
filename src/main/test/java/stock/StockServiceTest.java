@@ -40,8 +40,8 @@ public class StockServiceTest {
     @Test
     public void testGetAllHist() {
         stockService.getAllHist(1000, 0);
-//        stockService.getAllHist(1000, 1);
-//        stockService.getAllHist(1000, 2);
+        stockService.getAllHist(1000, 1);
+        stockService.getAllHist(1000, 2);
 //        stockService.getAllHist(1000, 3);
 //        stockService.getAllHist(1000, 4);
     }
