@@ -6,6 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @SpringBootTest(classes = elvis.App.class)
 public class StockServiceTest {
 
@@ -44,5 +49,62 @@ public class StockServiceTest {
         stockService.getAllHist(1000, 2);
 //        stockService.getAllHist(1000, 3);
 //        stockService.getAllHist(1000, 4);
+
+
+        List<Integer> l = new ArrayList<>();
+        int[] x = l.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    static int[] pas;
+    static int[] vals;
+    static int n;
+    static int[] maxes;
+
+    public static int bestSumDownwardTreePath(int[] parent, int[] values) {
+        // Write your code here
+        n = parent.length;
+        pas = parent;
+        vals = values;
+        // max = Integer.MIN_VALUE;
+//        pas = parent.stream() .mapToInt(Integer::intValue) .toArray();
+//        vals = values.stream() .mapToInt(Integer::intValue) .toArray();
+
+        maxes = new int[n];
+        for (int i = 0; i < n; i++)
+            maxes[i] = Integer.MIN_VALUE;
+        return find(0);
+    }
+
+    public static int find(int idx) {
+        int max = vals[idx];
+        for (int i = 0; i < n; i++) {
+            if (pas[i] == idx) {
+                int mx = maxes[idx] == Integer.MIN_VALUE ? find(i) : maxes[idx];
+                max = Math.max(max, vals[idx] + mx);
+                max = Math.max(max, mx);
+            }
+        }
+        maxes[idx] = max;
+        return max;
+    }
+
+    public static int getMaxBarrier(List<Integer> initialEnergy, long th) {
+        // Write your code here
+//        int[] ie = initialEnergy.stream() .mapToInt(Integer::intValue) .toArray();
+        int b = (int) initialEnergy.stream().mapToDouble(Integer::doubleValue).average().orElse(0D);
+        List<Long> ie = initialEnergy.stream().map(Integer::longValue).collect(Collectors.toList());
+        for (int i = b; i <= Integer.MAX_VALUE; i++) {
+            int finalI = i;
+            ie = ie.stream().filter(x -> x > 0).filter(x -> x - finalI > 0).collect(Collectors.toList());
+            if (initialEnergy.stream().mapToLong(x -> x - finalI).sum() < th) return i - 1;
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+//        System.out.println(getMaxBarrier(Arrays.stream(new int[]{Integer.MAX_VALUE, Integer.MAX_VALUE}).boxed().collect(Collectors.toList()), 2L));
+//        System.out.println(bestSumDownwardTreePath(new int[]{-1, 0, 1, 2, 0}, new int[]{-2, 10, 10, -3, 10}));
+//        System.out.println(Integer.MAX_VALUE);
+//        System.out.println(bestSumDownwardTreePath(new int[]{}, new int[]{}));
     }
 }
