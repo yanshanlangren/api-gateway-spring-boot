@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Slf4j
-//@Component
+@Component
 public class MyKafkaConsumer {
-//    @KafkaListener(topics = {"test"})
+    @KafkaListener(topics = {"test"})
     public void onMessage(ConsumerRecord<?, ?> consumerRecord) {
         Optional<?> optional = Optional.ofNullable(consumerRecord.value());
         if (optional.isPresent()) {

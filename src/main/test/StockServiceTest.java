@@ -1,5 +1,3 @@
-package stock;
-
 import elvis.common.utils.HTTPUtils;
 import elvis.service.StockService;
 import org.junit.jupiter.api.Test;

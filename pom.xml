@@ -114,6 +114,13 @@
             <version>${spring.boot.version}</version>
         </dependency>
 
+        <!-- mapstruct 对象映射 -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>LATEST</version>
+        </dependency>
+
     </dependencies>
 
     <build>
