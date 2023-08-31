@@ -121,6 +121,14 @@
             <version>LATEST</version>
         </dependency>
 
+        <!-- eureka -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>LATEST</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
